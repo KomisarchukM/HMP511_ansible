@@ -100,7 +100,7 @@ Both the `packages` and `wordpress` roles run only on the selected host. The ali
 
 ## Verify the Windows host connection
 
-The `[windows]` inventory group contains a Windows host managed over WinRM with the NTLM transport. The password is not stored in the repository: it is read from the control node environment variable `windows_pass` by `group_vars/windows.yml`.
+The `[windows]` inventory group contains a Windows host managed over WinRM with the NTLM transport. The connection uses the `winrm` plugin built into ansible-core (`ansible.builtin.winrm`): since ansible-core 2.20 the plugin no longer ships in the `ansible.windows` collection, so `ansible_connection=winrm` is used instead of `ansible.windows.winrm`. The scheme is plain HTTP on port 5985 (`ansible_winrm_scheme=http`, `ansible_winrm_port=5985`), matching the listener created by the setup script. The password is not stored in the repository: it is read from the control node environment variable `windows_pass` by `group_vars/windows.yml`.
 
 First, enable WinRM on the Windows host. Run PowerShell as Administrator on that host and execute:
 
@@ -129,7 +129,7 @@ Verify connectivity to all hosts in the `windows` group:
 ansible windows -m ansible.windows.win_ping
 ```
 
-A successful connection returns `win1 | SUCCESS => {"changed": false, "pong": "true"}`. To test a single host, pass the alias: `ansible win1 -m ansible.windows.win_ping`.
+A successful connection returns `win1 | SUCCESS => {"changed": false, "ping": "pong"}`. To test a single host, pass the alias: `ansible win1 -m ansible.windows.win_ping`.
 
 The connection uses Basic authentication with unencrypted transport, which is acceptable only inside a private network. Keep port 5985 restricted to the control node IP.
 
