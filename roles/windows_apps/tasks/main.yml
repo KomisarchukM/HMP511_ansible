@@ -1,18 +1,6 @@
 ---
-- name: Check whether Chocolatey is installed
-  ansible.windows.win_stat:
-    path: C:\ProgramData\chocolatey\bin\choco.exe
-  register: choco_exe
-
-- name: Install Chocolatey
-  ansible.windows.win_shell: |
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    Set-ExecutionPolicy Bypass -Scope Process -Force
-    iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-  when: not choco_exe.stat.exists
-
 - name: Install Google Chrome and Notepad++
-  community.windows.win_chocolatey:
+  chocolatey.chocolatey.win_chocolatey:
     name:
       - googlechrome
       - notepad++
