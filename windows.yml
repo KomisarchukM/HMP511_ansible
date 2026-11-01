@@ -1,0 +1,5 @@
+---
+- name: Configure Windows hosts
+  hosts: windows
+  roles:
+    - windows_apps

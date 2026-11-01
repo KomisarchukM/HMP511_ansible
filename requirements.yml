@@ -2,3 +2,4 @@
 collections:
   - name: ansible.mysql
   - name: ansible.windows
+  - name: community.windows
