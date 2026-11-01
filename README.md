@@ -11,6 +11,7 @@ Ansible playbooks for configuring Linux hosts on AWS.
 - Passwordless `sudo` for the `ubuntu` user on each managed host.
 - A public domain name pointing to the managed host's public IP address before enabling `wordpress_https_enabled` to request a Let's Encrypt certificate.
 - The `ansible.mysql` Ansible collection, installed from `requirements.yml` on the control node.
+- Python package `pywinrm` (required for the Windows group), installed from `requirements.txt` on the control node: `pip install -r requirements.txt`. On distributions with an externally managed Python (PEP 668), use a virtual environment or `sudo apt install python3-winrm` instead of plain `pip`.
 
 ## Project layout
 
@@ -23,7 +24,8 @@ group_vars/windows.yml        # variables for the windows group (WinRM password 
 roles/packages/tasks/main.yml # installs base packages
 roles/wordpress/              # Apache, MariaDB, PHP, WordPress and HTTPS deployment
 scripts/Enable-WinRM.ps1      # enables WinRM on a managed Windows host
-requirements.yml              # Ansible collection dependencies
+requirements.yml              # Ansible collection dependencies (ansible-galaxy)
+requirements.txt              # Python dependencies for the control node (pip)
 AGENTS.md                     # rules for AI coding agents
 .opencode/skills/             # agent skills for this repository
 .secret                       # local secrets storage (gitignored, never committed)
@@ -111,7 +113,7 @@ The script enables the WinRM listener, allows Basic authentication, sets the net
 Then, on the control node, install the extra dependencies:
 
 ```bash
-pip install pywinrm
+pip install -r requirements.txt
 ansible-galaxy collection install -r requirements.yml
 ```
 
