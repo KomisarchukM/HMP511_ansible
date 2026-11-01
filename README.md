@@ -4,7 +4,7 @@ Ansible playbooks for configuring Linux hosts on AWS.
 
 ## Requirements
 
-- Control node: Ubuntu Linux with `ansible-core` installed system-wide (tested with 2.21.x).
+- Control node: Ubuntu Linux with `ansible-core` installed system-wide (tested with 2.21.x). The control node is reachable for maintenance as `master@192.168.1.151`; its SSH password is stored locally in `.secret` under `host_pass` and is never committed.
 - Managed WordPress host: Ubuntu Server 24.04. Inbound TCP port 80 must be reachable from the internet; port 443 is additionally required when `wordpress_https_enabled` is `true`.
 - Managed Windows host (optional, `windows` group): WinRM enabled on TCP port 5985, reachable from the control node, with the `pywinrm` package and the `ansible.windows` collection installed.
 - SSH private key `Stockholm_3.pem` at `/etc/ansible/keys/` on the control node. The key is never committed.
