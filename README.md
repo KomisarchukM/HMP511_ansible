@@ -26,7 +26,8 @@ scripts/Enable-WinRM.ps1      # enables WinRM on a managed Windows host
 requirements.yml              # Ansible collection dependencies
 AGENTS.md                     # rules for AI coding agents
 .opencode/skills/             # agent skills for this repository
-.secret                       # local GitHub PAT storage (gitignored, never committed)
+.secret                       # local secrets storage (gitignored, never committed)
+.secret.example               # template for .secret with placeholder values
 ```
 
 ## WordPress configuration
