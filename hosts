@@ -1,4 +1,7 @@
 [webservers]
-server1 ansible_host=16.16.156.58 ansible_user=ubuntu ansible_ssh_private_key_file=/etc/ansible/keys/Stockholm_3.pem
-server2 ansible_host=16.170.209.142 ansible_user=ubuntu ansible_ssh_private_key_file=/etc/ansible/keys/Stockholm_3.pem
+server1 ansible_host=16.16.218.174 ansible_user=ubuntu ansible_ssh_private_key_file=/etc/ansible/keys/Stockholm_3.pem
+server2 ansible_host=13.63.175.210 ansible_user=ubuntu ansible_ssh_private_key_file=/etc/ansible/keys/Stockholm_3.pem
+
+[windows]
+win1 ansible_host=13.61.188.65 ansible_user=Administrator ansible_connection=ansible.windows.winrm ansible_winrm_transport=ntlm ansible_winrm_server_cert_validation=ignore
 
