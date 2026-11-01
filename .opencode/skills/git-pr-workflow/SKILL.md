@@ -46,6 +46,7 @@ Base branch: `master`. Remote: `origin` (GitHub).
 - The `github` MCP server is configured globally in OpenCode (`https://api.githubcopilot.com/mcp/`). It authenticates with a fine-grained PAT sent in the `Authorization` header from the `GITHUB_MCP_PAT` environment variable. The token never enters this repository or any command line.
 - GitHub's remote MCP server does not support OAuth dynamic client registration, so the `/mcps` sign-in flow does not work for it.
 - If the server is not connected (for example `opencode mcp list` reports an authentication error), ask the user to verify `GITHUB_MCP_PAT` and restart the OpenCode background service. Do not use the `gh` CLI as a replacement.
+- The current PAT can create branches and pull requests but CANNOT merge them: `merge_pull_request` fails with `403 Resource not accessible by personal access token` because the token lacks the `Contents: Write` permission. After creating a PR, return its URL and ask the user to merge it manually (or to extend the PAT permissions first).
 - The current PAT has read-only contents permission, so pull requests are merged by the user in the GitHub web interface. Do not attempt to merge a PR through MCP tools unless the token explicitly has `Contents: Read and write`.
 
 ## Before creating a PR

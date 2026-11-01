@@ -7,6 +7,9 @@ Project instructions for AI coding agents working in this repository.
 Ansible playbooks for managing Linux hosts on AWS.
 
 - Control node: Ubuntu Linux machine with `ansible-core` installed system-wide (tested with 2.21.x).
+- Control node access from the dev machine: SSH to `master@192.168.1.151` (password in the local `.secret` file under the `host_pass` key; on Windows use `plink`). Only read-only diagnostics are allowed remotely, and only after explicit user approval. Never print passwords.
+- Control node Python environment: `ansible` is installed system-wide via `apt` and a virtualenv does NOT contain it (the shell falls through to `/usr/bin/ansible`). Install Python dependencies with `apt` (for example `python3-winrm`); plain `pip install` fails with `externally-managed-environment` (PEP 668).
+- Managed Windows host (optional, `windows` inventory group): WinRM over plain HTTP on TCP port 5985 with NTLM transport. The connection plugin is the one built into ansible-core (`ansible_connection=winrm`); since ansible-core 2.20 `ansible.windows.winrm` no longer exists. The password is read from the `windows_pass` environment variable by `group_vars/windows.yml`.
 - Inventory: `./hosts` (group `webservers`).
 - Entry playbook: `site.yml`.
 - Roles: `roles/<name>/`.
@@ -26,7 +29,7 @@ Ansible playbooks for managing Linux hosts on AWS.
 1. Before any action that changes files, runs git commands, or runs `ansible-playbook` against hosts, show exactly what will be done and wait for explicit user approval.
 2. Never push to `master`. Work in a feature branch and open a Pull Request.
 3. Never commit secrets (SSH keys, `.pem`, passwords, tokens).
-4. Do not change `hosts` or inventory variables without explicit approval.
+4. Do not change `hosts` or inventory variables without explicit approval. Windows hosts belong to the `windows` group only; never add them to `webservers` (the WordPress roles target Ubuntu).
 5. Store `wordpress_db_password` and `wordpress_admin_password` as Ansible Vault encrypted values in `group_vars/webservers.yml`. Keep the Vault password outside the repository. Never put plaintext credentials in role tasks, templates, documentation, or command-line arguments.
 6. When `wordpress_https_enabled` is `true`, the WordPress role requires a configured domain and email addresses, DNS pointing to the target host, and network access to ports 80 and 443 for Let's Encrypt. When it is `false`, the site is served over plain HTTP and no certificate is requested.
 7. Interact with GitHub through the `github` MCP server (configured globally in OpenCode, authenticated with a fine-grained PAT from the `GITHUB_MCP_PAT` environment variable). Do not use the `gh` CLI. The token file `.secret` is gitignored and must never be committed or printed.

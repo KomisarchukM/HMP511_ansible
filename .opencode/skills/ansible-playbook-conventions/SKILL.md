@@ -35,6 +35,17 @@ roles/<role>/defaults/main.yml  # only if needed; prefer group_vars
 - Make WordPress configuration and Apache virtual hosts repeatable. When `wordpress_https_enabled` is `true`, also keep Certbot issuance and certificate renewal repeatable, and preserve the HTTP ACME challenge path when redirecting other HTTP traffic to HTTPS.
 - When `wordpress_https_enabled` is `true`, require a configured public domain and contact email before certificate issuance. Do not run deployment tasks against hosts without explicit approval.
 
+## Windows hosts
+
+- Windows hosts live in the `windows` inventory group only. Never add them to `webservers`: `site.yml` and its roles target Ubuntu (apt, Apache, MariaDB).
+- Connection settings in `hosts`:
+  - `ansible_connection=winrm` — the plugin built into ansible-core (since 2.20 the `ansible.windows.winrm` FQCN no longer exists).
+  - `ansible_winrm_scheme=http` and `ansible_winrm_port=5985` — the listener created by `scripts/Enable-WinRM.ps1` is plain HTTP; the default scheme is HTTPS on 5986 and will time out.
+  - `ansible_winrm_transport=ntlm` and `ansible_winrm_server_cert_validation=ignore`.
+- The password must never appear in `hosts` or role files. It is read in `group_vars/windows.yml` through `lookup('env', 'windows_pass')` and set on the control node with `export windows_pass='<password>'`. Mark tasks that handle Windows credentials `no_log: true`.
+- WinRM prerequisites on the Windows host: run `scripts/Enable-WinRM.ps1` as Administrator, open inbound TCP 5985 in the AWS Security Group for the control node IP only, and install `python3-winrm` on the control node.
+- Test connectivity with `ansible windows -m ansible.windows.win_ping`; expected success output is `{"ping": "pong"}`.
+
 ## Idempotency
 
 - Every task must be safe to run repeatedly.
