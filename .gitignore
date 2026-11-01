@@ -1,3 +1,4 @@
 /keys/*
 /.secret
 terraform.tfstate
+fetched_files/

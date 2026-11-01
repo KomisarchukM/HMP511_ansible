@@ -1,0 +1,31 @@
+---
+- name: Find a text file on Windows hosts and copy it to the control node
+  hosts: windows
+  vars:
+    search_path: 'C:\Users\Administrator'
+    # Matches file names without any dot, optionally ending in .txt.
+    # Files with other extensions (archive.tar.gz, setup.exe, ...) are skipped.
+    file_pattern: '^[^.]+(\.txt)?$'
+    dest_dir: "{{ lookup('env', 'HOME') }}/fetched_files"
+  tasks:
+    - name: Search for matching files
+      ansible.windows.win_find:
+        paths: "{{ search_path }}"
+        patterns: "{{ file_pattern }}"
+        use_regex: true
+        file_type: file
+      register: found
+      no_log: true
+
+    - name: Fail when no matching file was found
+      ansible.builtin.fail:
+        msg: "No files matching '{{ file_pattern }}' under {{ search_path }} on {{ inventory_hostname }}"
+      when: found.matched | int == 0
+
+    - name: Fetch matching files to the control node
+      ansible.builtin.fetch:
+        src: "{{ item.path }}"
+        dest: "{{ dest_dir }}/{{ inventory_hostname }}/"
+      loop: "{{ found.files }}"
+      loop_control:
+        label: "{{ item.path }}"
