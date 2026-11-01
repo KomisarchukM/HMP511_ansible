@@ -6,6 +6,7 @@ Ansible playbooks for configuring Linux hosts on AWS.
 
 - Control node: Ubuntu Linux with `ansible-core` installed system-wide (tested with 2.21.x).
 - Managed WordPress host: Ubuntu Server 24.04. Inbound TCP port 80 must be reachable from the internet; port 443 is additionally required when `wordpress_https_enabled` is `true`.
+- Managed Windows host (optional, `windows` group): WinRM enabled on TCP port 5985, reachable from the control node, with the `pywinrm` package and the `ansible.windows` collection installed.
 - SSH private key `Stockholm_3.pem` at `/etc/ansible/keys/` on the control node. The key is never committed.
 - Passwordless `sudo` for the `ubuntu` user on each managed host.
 - A public domain name pointing to the managed host's public IP address before enabling `wordpress_https_enabled` to request a Let's Encrypt certificate.
@@ -15,11 +16,13 @@ Ansible playbooks for configuring Linux hosts on AWS.
 
 ```
 site.yml                      # entry playbook
-hosts                         # inventory (group: webservers)
+hosts                         # inventory (groups: webservers, windows)
 ansible.cfg                   # Ansible settings (inventory = ./hosts)
 group_vars/webservers.yml     # variables for the webservers group
+group_vars/windows.yml        # variables for the windows group (WinRM password env lookup)
 roles/packages/tasks/main.yml # installs base packages
 roles/wordpress/              # Apache, MariaDB, PHP, WordPress and HTTPS deployment
+scripts/Enable-WinRM.ps1      # enables WinRM on a managed Windows host
 requirements.yml              # Ansible collection dependencies
 AGENTS.md                     # rules for AI coding agents
 .opencode/skills/             # agent skills for this repository
@@ -91,6 +94,41 @@ ansible-playbook site.yml --ask-vault-pass --check --diff --limit server2
 ```
 
 Both the `packages` and `wordpress` roles run only on the selected host. The alias must exist in `hosts` and belong to the `webservers` group. With `wordpress_https_enabled: false` each host serves its own inventory IP, so the same group variables work for either server.
+
+## Verify the Windows host connection
+
+The `[windows]` inventory group contains a Windows host managed over WinRM with the NTLM transport. The password is not stored in the repository: it is read from the control node environment variable `windows_pass` by `group_vars/windows.yml`.
+
+First, enable WinRM on the Windows host. Run PowerShell as Administrator on that host and execute:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\Enable-WinRM.ps1
+```
+
+The script enables the WinRM listener, allows Basic authentication, sets the network profile to Private, raises the module memory and timeout limits, and opens the firewall port 5985 for the Private profile. In the AWS Security Group of the Windows host, allow inbound TCP 5985 from the control node IP only.
+
+Then, on the control node, install the extra dependencies:
+
+```bash
+pip install pywinrm
+ansible-galaxy collection install -r requirements.yml
+```
+
+Set the password for the current shell session:
+
+```bash
+export windows_pass='<password>'
+```
+
+Verify connectivity to all hosts in the `windows` group:
+
+```bash
+ansible windows -m ansible.windows.win_ping
+```
+
+A successful connection returns `win1 | SUCCESS => {"changed": false, "pong": "true"}`. To test a single host, pass the alias: `ansible win1 -m ansible.windows.win_ping`.
+
+The connection uses Basic authentication with unencrypted transport, which is acceptable only inside a private network. Keep port 5985 restricted to the control node IP.
 
 ## Adding packages
 
